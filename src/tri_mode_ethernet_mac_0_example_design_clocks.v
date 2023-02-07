@@ -55,9 +55,8 @@
 
 module tri_mode_ethernet_mac_0_example_design_clocks
    (
-   // differential clock inputs
-   input          clk_in_p,
-   input          clk_in_n,
+   // clock inputs
+   input          clk_in,
 
    // asynchronous control/resets
    input          glbl_rst,
@@ -80,10 +79,10 @@ module tri_mode_ethernet_mac_0_example_design_clocks
 
   // Input buffering
   //------------------------------------
-  IBUFDS clkin1_buf
+  IBUF clkin1_buf
    (.O  (clkin1),
-    .I  (clk_in_p),
-    .IB (clk_in_n));
+    .I  (clk_in)
+   );
 
   // route clkin1 through a BUFGCE for the MMCM reset generation logic
   BUFGCE bufg_clkin1 (.I(clkin1), .CE  (1'b1), .O(clkin1_bufg));

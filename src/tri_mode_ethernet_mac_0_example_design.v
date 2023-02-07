@@ -135,9 +135,9 @@ module tri_mode_ethernet_mac_0_example_design
       // asynchronous reset
       input         glbl_rst,
 
-      // 200MHz clock input from board
-      input         clk_in_p,
-      input         clk_in_n,
+      // 100MHz clock input from board
+      input         clk_in,
+
       // 125 MHz clock from MMCM
       output        gtx_clk_bufg_out,
 
@@ -241,9 +241,8 @@ module tri_mode_ethernet_mac_0_example_design
   //----------------------------------------------------------------------------
   tri_mode_ethernet_mac_0_example_design_clocks example_clocks
    (
-      // differential clock inputs
-      .clk_in_p         (clk_in_p),
-      .clk_in_n         (clk_in_n),
+      // clock input
+      .clk_in           (clk_in),
 
       // asynchronous control/resets
       .glbl_rst         (glbl_rst),
