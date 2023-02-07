@@ -161,12 +161,6 @@ module tri_mode_ethernet_mac_0_example_design
       inout         mdio,
       output        mdc,
 
-
-      // Serialised statistics vectors
-      //------------------------------
-      output        tx_statistics_s,
-      output        rx_statistics_s,
-
       // Serialised Pause interface controls
       //------------------------------------
       input         pause_req_s,
@@ -230,26 +224,6 @@ module tri_mode_ethernet_mac_0_example_design
    wire                 tx_axis_fifo_tvalid;
    wire                 tx_axis_fifo_tlast;
    wire                 tx_axis_fifo_tready;
-
-   // RX Statistics serialisation signals
-   wire                 rx_statistics_valid;
-   reg                  rx_statistics_valid_reg;
-   wire  [27:0]         rx_statistics_vector;
-   reg   [27:0]         rx_stats;
-   reg   [29:0]         rx_stats_shift;
-   reg                  rx_stats_toggle = 0;
-   wire                 rx_stats_toggle_sync;
-   reg                  rx_stats_toggle_sync_reg = 0;
-
-   // TX Statistics serialisation signals
-   wire                 tx_statistics_valid;
-   reg                  tx_statistics_valid_reg;
-   wire  [31:0]         tx_statistics_vector;
-   reg   [31:0]         tx_stats;
-   reg   [33:0]         tx_stats_shift;
-   reg                  tx_stats_toggle = 0;
-   wire                 tx_stats_toggle_sync;
-   reg                  tx_stats_toggle_sync_reg = 0;
 
    // Pause interface DESerialisation
    reg   [18:0]         pause_shift;
@@ -374,90 +348,9 @@ module tri_mode_ethernet_mac_0_example_design
 
 
    // generate the user side resets for the axi fifos
-   
    assign tx_fifo_resetn = gtx_resetn;
    assign rx_fifo_resetn = gtx_resetn;
-   
 
-  //----------------------------------------------------------------------------
-  // Serialize the stats vectors
-  // This is a single bit approach, retimed onto gtx_clk
-  // this code is only present to prevent code being stripped..
-  //----------------------------------------------------------------------------
-
-  // RX STATS
-
-  // first capture the stats on the appropriate clock
-  always @(posedge rx_mac_aclk)
-  begin
-     rx_statistics_valid_reg <= rx_statistics_valid;
-     if (!rx_statistics_valid_reg & rx_statistics_valid) begin
-        rx_stats <= rx_statistics_vector;
-        rx_stats_toggle <= !rx_stats_toggle;
-     end
-  end
-
-  tri_mode_ethernet_mac_0_sync_block rx_stats_sync (
-     .clk              (gtx_clk_bufg),
-     .data_in          (rx_stats_toggle),
-     .data_out         (rx_stats_toggle_sync)
-  );
-
-  always @(posedge gtx_clk_bufg)
-  begin
-     rx_stats_toggle_sync_reg <= rx_stats_toggle_sync;
-  end
-
-  // when an update is rxd load shifter (plus start/stop bit)
-  // shifter always runs (no power concerns as this is an example design)
-  always @(posedge gtx_clk_bufg)
-  begin
-     if (rx_stats_toggle_sync_reg != rx_stats_toggle_sync) begin
-        rx_stats_shift <= {1'b1, rx_stats, 1'b1};
-     end
-     else begin
-        rx_stats_shift <= {rx_stats_shift[28:0], 1'b0};
-     end
-  end
-
-  assign rx_statistics_s = rx_stats_shift[29];
-
-  // TX STATS
-
-  // first capture the stats on the appropriate clock
-  always @(posedge tx_mac_aclk)
-  begin
-     tx_statistics_valid_reg <= tx_statistics_valid;
-     if (!tx_statistics_valid_reg & tx_statistics_valid) begin
-        tx_stats <= tx_statistics_vector;
-        tx_stats_toggle <= !tx_stats_toggle;
-     end
-  end
-
-  tri_mode_ethernet_mac_0_sync_block tx_stats_sync (
-     .clk              (gtx_clk_bufg),
-     .data_in          (tx_stats_toggle),
-     .data_out         (tx_stats_toggle_sync)
-  );
-
-  always @(posedge gtx_clk_bufg)
-  begin
-     tx_stats_toggle_sync_reg <= tx_stats_toggle_sync;
-  end
-
-  // when an update is txd load shifter (plus start bit)
-  // shifter always runs (no power concerns as this is an example design)
-  always @(posedge gtx_clk_bufg)
-  begin
-     if (tx_stats_toggle_sync_reg != tx_stats_toggle_sync) begin
-        tx_stats_shift <= {1'b1, tx_stats, 1'b1};
-     end
-     else begin
-        tx_stats_shift <= {tx_stats_shift[32:0], 1'b0};
-     end
-  end
-
-  assign tx_statistics_s = tx_stats_shift[33];
 
   //----------------------------------------------------------------------------
   // DSerialize the Pause interface
