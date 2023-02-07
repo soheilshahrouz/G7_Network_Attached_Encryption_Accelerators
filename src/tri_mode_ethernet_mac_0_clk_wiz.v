@@ -104,7 +104,7 @@ module tri_mode_ethernet_mac_0_clk_wiz
     .COMPENSATION         ("ZHOLD"),
     
     .DIVCLK_DIVIDE        (1),
-    .CLKFBOUT_MULT_F      (5.000),
+    .CLKFBOUT_MULT_F      (10.000),
     .CLKFBOUT_PHASE       (0.000),
     .CLKOUT0_DIVIDE_F     (8.000),
     .CLKOUT0_PHASE        (0.000),
@@ -117,7 +117,7 @@ module tri_mode_ethernet_mac_0_clk_wiz
   
     .CLKOUT2_PHASE        (0.000),
     .CLKOUT2_DUTY_CYCLE   (0.500),
-    .CLKIN1_PERIOD        (5.000),
+    .CLKIN1_PERIOD        (10.000),
     .REF_JITTER1          (0.010))
   mmcm_adv_inst
     // Output clocks

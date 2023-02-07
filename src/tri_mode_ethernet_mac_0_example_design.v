@@ -161,43 +161,43 @@ module tri_mode_ethernet_mac_0_example_design
       inout         mdio,
       output        mdc,
       
-    output                              axis_clk,
-    output                              axis_resetn,  
+      output                              axis_clk,
+      output                              axis_resetn,  
       // data from the RX data path
-    output       [7:0]                  rx_axis_tdata,
-    output                              rx_axis_tvalid,
-    output                              rx_axis_tlast,
-    input                               rx_axis_tready,
-    
-    // data TO the TX data path
-    input      [7:0]                    tx_axis_tdata,
-    input                               tx_axis_tvalid,
-    input                               tx_axis_tlast,
-    output                              tx_axis_tready,
-    
-    output        s_axi_aclk_out,
-    output        s_axi_resetn_out,
-    
-    input  [11:0] s_axi_awaddr,
-    input         s_axi_awvalid,
-    output        s_axi_awready,
-    
-    input  [31:0] s_axi_wdata,
-    input         s_axi_wvalid,
-    output        s_axi_wready,
-    
-    output [1:0]  s_axi_bresp,
-    output        s_axi_bvalid,
-    input         s_axi_bready,
-    
-    input  [11:0] s_axi_araddr,
-    input         s_axi_arvalid,
-    output        s_axi_arready,
-    
-    output [31:0] s_axi_rdata,
-    output [1:0]  s_axi_rresp,
-    output        s_axi_rvalid,
-    input         s_axi_rready
+      output       [7:0]                  rx_axis_tdata,
+      output                              rx_axis_tvalid,
+      output                              rx_axis_tlast,
+      input                               rx_axis_tready,
+
+      // data TO the TX data path
+      input      [7:0]                    tx_axis_tdata,
+      input                               tx_axis_tvalid,
+      input                               tx_axis_tlast,
+      output                              tx_axis_tready,
+
+      output        s_axi_aclk_out,
+      output        s_axi_resetn_out,
+
+      input  [11:0] s_axi_awaddr,
+      input         s_axi_awvalid,
+      output        s_axi_awready,
+
+      input  [31:0] s_axi_wdata,
+      input         s_axi_wvalid,
+      output        s_axi_wready,
+
+      output [1:0]  s_axi_bresp,
+      output        s_axi_bvalid,
+      input         s_axi_bready,
+
+      input  [11:0] s_axi_araddr,
+      input         s_axi_arvalid,
+      output        s_axi_arready,
+
+      output [31:0] s_axi_rdata,
+      output [1:0]  s_axi_rresp,
+      output        s_axi_rvalid,
+      input         s_axi_rready
 
     );
 
