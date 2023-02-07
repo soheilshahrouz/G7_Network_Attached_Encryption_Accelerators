@@ -160,25 +160,44 @@ module tri_mode_ethernet_mac_0_example_design
       //---------------
       inout         mdio,
       output        mdc,
-
-      // Serialised Pause interface controls
-      //------------------------------------
-      input         pause_req_s,
-
-      // Main example design controls
-      //-----------------------------
-      input  [1:0]  mac_speed,
-      input         update_speed,
-      //input         serial_command, // tied to pause_req_s
-      input         config_board,
-      output        serial_response,
-      input         gen_tx_data,
-      input         chk_tx_data,
-      input         reset_error,
-      output        frame_error,
-      output        frame_errorn,
-      output        activity_flash,
-      output        activity_flashn
+      
+    output                              axis_clk,
+    output                              axis_resetn,  
+      // data from the RX data path
+    output       [7:0]                  rx_axis_tdata,
+    output                              rx_axis_tvalid,
+    output                              rx_axis_tlast,
+    input                               rx_axis_tready,
+    
+    // data TO the TX data path
+    input      [7:0]                    tx_axis_tdata,
+    input                               tx_axis_tvalid,
+    input                               tx_axis_tlast,
+    output                              tx_axis_tready,
+    
+    output        s_axi_aclk_out,
+    output        s_axi_resetn_out,
+    
+    input  [11:0] s_axi_awaddr,
+    input         s_axi_awvalid,
+    output        s_axi_awready,
+    
+    input  [31:0] s_axi_wdata,
+    input         s_axi_wvalid,
+    output        s_axi_wready,
+    
+    output [1:0]  s_axi_bresp,
+    output        s_axi_bvalid,
+    input         s_axi_bready,
+    
+    input  [11:0] s_axi_araddr,
+    input         s_axi_arvalid,
+    output        s_axi_arready,
+    
+    output [31:0] s_axi_rdata,
+    output [1:0]  s_axi_rresp,
+    output        s_axi_rvalid,
+    input         s_axi_rready
 
     );
 
@@ -194,7 +213,6 @@ module tri_mode_ethernet_mac_0_example_design
    wire                 tx_mac_aclk;
    // resets (and reset generation)
    wire                 s_axi_resetn;
-   wire                 chk_resetn;
    
    wire                 gtx_resetn;
    
@@ -208,82 +226,14 @@ module tri_mode_ethernet_mac_0_example_design
    // USER side RX AXI-S interface
    wire                 rx_fifo_clock;
    wire                 rx_fifo_resetn;
-   
-   wire  [7:0]          rx_axis_fifo_tdata;
-   
-   wire                 rx_axis_fifo_tvalid;
-   wire                 rx_axis_fifo_tlast;
-   wire                 rx_axis_fifo_tready;
 
    // USER side TX AXI-S interface
    wire                 tx_fifo_clock;
    wire                 tx_fifo_resetn;
    
-   wire  [7:0]          tx_axis_fifo_tdata;
    
-   wire                 tx_axis_fifo_tvalid;
-   wire                 tx_axis_fifo_tlast;
-   wire                 tx_axis_fifo_tready;
-
-   // Pause interface DESerialisation
-   reg   [18:0]         pause_shift;
-   reg                  pause_req;
-   reg   [15:0]         pause_val;
-
-   // AXI-Lite interface
-   wire  [11:0]         s_axi_awaddr;
-   wire                 s_axi_awvalid;
-   wire                 s_axi_awready;
-   wire  [31:0]         s_axi_wdata;
-   wire                 s_axi_wvalid;
-   wire                 s_axi_wready;
-   wire  [1:0]          s_axi_bresp;
-   wire                 s_axi_bvalid;
-   wire                 s_axi_bready;
-   wire  [11:0]         s_axi_araddr;
-   wire                 s_axi_arvalid;
-   wire                 s_axi_arready;
-   wire  [31:0]         s_axi_rdata;
-   wire  [1:0]          s_axi_rresp;
-   wire                 s_axi_rvalid;
-   wire                 s_axi_rready;
-
-
-   wire                 int_frame_error;
-   wire                 int_activity_flash;
-
-   // set board defaults - only updated when reprogrammed
-   reg                  enable_address_swap = 1;
-            
-   reg                  enable_phy_loopback = 0;
-
-   // signal tie offs
-   wire  [7:0]          tx_ifg_delay = 0;    // not used in this example
-
-   assign activity_flash  = int_activity_flash;
-   assign activity_flashn = !int_activity_flash;
-
-
-  assign frame_error  = int_frame_error;
-  assign frame_errorn = !int_frame_error;
-  
-  // when the config_board button is pushed capture and hold the
-  // state of the gne/chek tx_data inputs.  These values will persist until the
-  // board is reprogrammed or config_board is pushed again
-  always @(posedge gtx_clk_bufg)
-  begin
-     if (config_board) begin
-        enable_address_swap   <= gen_tx_data;
-     end
-  end
-
-            
-  always @(posedge s_axi_aclk)
-  begin
-     if (config_board) begin
-        enable_phy_loopback   <= chk_tx_data;
-     end
-  end
+   assign s_axi_aclk_out = s_axi_aclk;
+   assign s_axi_resetn_out = s_axi_resetn;       
 
   //----------------------------------------------------------------------------
   // Clock logic to generate required clocks from the 200MHz on board
@@ -312,6 +262,7 @@ module tri_mode_ethernet_mac_0_example_design
   // Generate the user side clocks for the axi fifos
   //----------------------------------------------------------------------------
    
+  assign axis_clk = gtx_clk_bufg;
   assign tx_fifo_clock = gtx_clk_bufg;
   assign rx_fifo_clock = gtx_clk_bufg;
    
@@ -328,7 +279,7 @@ module tri_mode_ethernet_mac_0_example_design
 
       // asynchronous resets
       .glbl_rst         (glbl_rst),
-      .reset_error      (reset_error),
+      .reset_error      (1'b0),
       .rx_reset         (rx_reset),
       .tx_reset         (tx_reset),
 
@@ -343,75 +294,14 @@ module tri_mode_ethernet_mac_0_example_design
    
       .s_axi_resetn     (s_axi_resetn),
       .phy_resetn       (phy_resetn),
-      .chk_resetn       (chk_resetn)
+      .chk_resetn       ()
    );
 
 
    // generate the user side resets for the axi fifos
    assign tx_fifo_resetn = gtx_resetn;
    assign rx_fifo_resetn = gtx_resetn;
-
-
-  //----------------------------------------------------------------------------
-  // DSerialize the Pause interface
-  // This is a single bit approachtimed on gtx_clk
-  // this code is only present to prevent code being stripped..
-  //----------------------------------------------------------------------------
-  // the serialised pause info has a start bit followed by the quanta and a stop bit
-  // capture the quanta when the start bit hits the msb and the stop bit is in the lsb
-  always @(posedge gtx_clk_bufg)
-  begin
-     pause_shift <= {pause_shift[17:0], pause_req_s};
-  end
-
-  always @(posedge gtx_clk_bufg)
-  begin
-     if (pause_shift[18] == 1'b0 & pause_shift[17] == 1'b1 & pause_shift[0] == 1'b1) begin
-        pause_req <= 1'b1;
-        pause_val <= pause_shift[16:1];
-     end
-     else begin
-        pause_req <= 1'b0;
-        pause_val <= 0;
-     end
-  end
-
-  //----------------------------------------------------------------------------
-  // Instantiate the AXI-LITE Controller
-  //----------------------------------------------------------------------------
-
-   tri_mode_ethernet_mac_0_axi_lite_sm axi_lite_controller (
-      .s_axi_aclk                   (s_axi_aclk),
-      .s_axi_resetn                 (s_axi_resetn),
-
-      .mac_speed                    (mac_speed),
-      .update_speed                 (update_speed),   // may need glitch protection on this..
-      .serial_command               (pause_req_s),
-      .serial_response              (serial_response),
-            
-      .phy_loopback                 (enable_phy_loopback),
-
-      .s_axi_awaddr                 (s_axi_awaddr),
-      .s_axi_awvalid                (s_axi_awvalid),
-      .s_axi_awready                (s_axi_awready),
-
-      .s_axi_wdata                  (s_axi_wdata),
-      .s_axi_wvalid                 (s_axi_wvalid),
-      .s_axi_wready                 (s_axi_wready),
-
-      .s_axi_bresp                  (s_axi_bresp),
-      .s_axi_bvalid                 (s_axi_bvalid),
-      .s_axi_bready                 (s_axi_bready),
-
-      .s_axi_araddr                 (s_axi_araddr),
-      .s_axi_arvalid                (s_axi_arvalid),
-      .s_axi_arready                (s_axi_arready),
-
-      .s_axi_rdata                  (s_axi_rdata),
-      .s_axi_rresp                  (s_axi_rresp),
-      .s_axi_rvalid                 (s_axi_rvalid),
-      .s_axi_rready                 (s_axi_rready)
-   );
+   assign axis_resetn = gtx_resetn;
 
   //----------------------------------------------------------------------------
   // Instantiate the TRIMAC core fifo block wrapper
@@ -428,41 +318,41 @@ module tri_mode_ethernet_mac_0_example_design
       //---------------------------------------
       .rx_mac_aclk                  (rx_mac_aclk),
       .rx_reset                     (rx_reset),
-      .rx_statistics_vector         (rx_statistics_vector),
-      .rx_statistics_valid          (rx_statistics_valid),
+      .rx_statistics_vector         (),
+      .rx_statistics_valid          (),
 
       // Receiver (AXI-S) Interface
       //----------------------------------------
       .rx_fifo_clock                (rx_fifo_clock),
       .rx_fifo_resetn               (rx_fifo_resetn),
-      .rx_axis_fifo_tdata           (rx_axis_fifo_tdata),
-      .rx_axis_fifo_tvalid          (rx_axis_fifo_tvalid),
-      .rx_axis_fifo_tready          (rx_axis_fifo_tready),
-      .rx_axis_fifo_tlast           (rx_axis_fifo_tlast),
+      .rx_axis_fifo_tdata           (rx_axis_tdata),
+      .rx_axis_fifo_tvalid          (rx_axis_tvalid),
+      .rx_axis_fifo_tready          (rx_axis_tready),
+      .rx_axis_fifo_tlast           (rx_axis_tlast),
        
       // Transmitter Statistics Interface
       //------------------------------------------
       .tx_mac_aclk                  (tx_mac_aclk),
       .tx_reset                     (tx_reset),
-      .tx_ifg_delay                 (tx_ifg_delay),
-      .tx_statistics_vector         (tx_statistics_vector),
-      .tx_statistics_valid          (tx_statistics_valid),
+      .tx_ifg_delay                 (8'b0),
+      .tx_statistics_vector         (),
+      .tx_statistics_valid          (),
 
       // Transmitter (AXI-S) Interface
       //-------------------------------------------
       .tx_fifo_clock                (tx_fifo_clock),
       .tx_fifo_resetn               (tx_fifo_resetn),
-      .tx_axis_fifo_tdata           (tx_axis_fifo_tdata),
-      .tx_axis_fifo_tvalid          (tx_axis_fifo_tvalid),
-      .tx_axis_fifo_tready          (tx_axis_fifo_tready),
-      .tx_axis_fifo_tlast           (tx_axis_fifo_tlast),
+      .tx_axis_fifo_tdata           (tx_axis_tdata),
+      .tx_axis_fifo_tvalid          (tx_axis_tvalid),
+      .tx_axis_fifo_tready          (tx_axis_tready),
+      .tx_axis_fifo_tlast           (tx_axis_tlast),
        
 
 
       // MAC Control Interface
       //------------------------
-      .pause_req                    (pause_req),
-      .pause_val                    (pause_val),
+      .pause_req                    (1'b0),
+      .pause_val                    (16'b0),
 
       // MII Interface
       //---------------
@@ -508,39 +398,6 @@ module tri_mode_ethernet_mac_0_example_design
       .s_axi_rready                 (s_axi_rready)
 
    );
-
-
-  //----------------------------------------------------------------------------
-  //  Instantiate the address swapping module and simple pattern generator
-  //----------------------------------------------------------------------------
-
-   tri_mode_ethernet_mac_0_basic_pat_gen basic_pat_gen_inst (
-      .axi_tclk                     (tx_fifo_clock),
-      .axi_tresetn                  (tx_fifo_resetn),
-      .check_resetn                 (chk_resetn),
-
-      .enable_pat_gen               (gen_tx_data),
-      .enable_pat_chk               (chk_tx_data),
-      .enable_address_swap          (enable_address_swap),
-      .speed                        (mac_speed),
-
-      .rx_axis_tdata                (rx_axis_fifo_tdata),
-      .rx_axis_tvalid               (rx_axis_fifo_tvalid),
-      .rx_axis_tlast                (rx_axis_fifo_tlast),
-      .rx_axis_tuser                (1'b0), // the FIFO drops all bad frames
-      .rx_axis_tready               (rx_axis_fifo_tready),
-
-      .tx_axis_tdata                (tx_axis_fifo_tdata),
-      .tx_axis_tvalid               (tx_axis_fifo_tvalid),
-      .tx_axis_tlast                (tx_axis_fifo_tlast),
-      .tx_axis_tready               (tx_axis_fifo_tready),
-
-      .frame_error                  (int_frame_error),
-      .activity_flash               (int_activity_flash)
-   );
-   
-
-
 
 endmodule
 
