@@ -13,7 +13,8 @@ module top (
     input           phy2rmii_rx_er,
     input  [1 : 0]  phy2rmii_rxd,
     output [1 : 0]  rmii2phy_txd,
-    output          rmii2phy_tx_en
+    output          rmii2phy_tx_en,
+    output          eth_ref_clk
 
 );
 
@@ -198,5 +199,8 @@ module top (
         .rmii2phy_txd(rmii2phy_txd),
         .rmii2phy_tx_en(rmii2phy_tx_en)
     );
+
+
+    assign eth_ref_clk = mii_to_rmii_ref_clk;
     
 endmodule
