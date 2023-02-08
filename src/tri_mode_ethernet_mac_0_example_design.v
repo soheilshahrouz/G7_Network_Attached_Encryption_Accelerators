@@ -140,6 +140,7 @@ module tri_mode_ethernet_mac_0_example_design
 
       // 125 MHz clock from MMCM
       output        gtx_clk_bufg_out,
+      output        mii_to_rmii_ref_clk,
 
       output        phy_resetn,
 
@@ -250,7 +251,8 @@ module tri_mode_ethernet_mac_0_example_design
 
       // clock outputs
       .gtx_clk_bufg     (gtx_clk_bufg),
-      .s_axi_aclk       (s_axi_aclk)
+      .s_axi_aclk       (s_axi_aclk),
+      .mii_to_rmii_ref_clk(mii_to_rmii_ref_clk)
    );
 
     // Pass the GTX clock to the Test Bench

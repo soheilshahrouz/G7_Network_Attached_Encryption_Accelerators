@@ -56,13 +56,14 @@
 // Output     Output      Phase    Duty Cycle   Pk-to-Pk     Phase
 // Clock     Freq (MHz)  (degrees)    (%)     Jitter (ps)  Error (ps)
 //----------------------------------------------------------------------------
-// CLK_OUT1   125.000      0.000      50.0       91.364     85.928
-// CLK_OUT2   100.000      0.000      50.0       70.716     85.928
+// CLK_OUT1   125.000      0.000      50.0       
+// CLK_OUT2   100.000      0.000      50.0       
+// CLK_OUT2    50.000      0.000      50.0       
 //
 //----------------------------------------------------------------------------
 // Input Clock   Input Freq (MHz)   Input Jitter (UI)
 //----------------------------------------------------------------------------
-// primary         200.000            0.010
+// primary         100.000            0.010
 
 `timescale 1ps/1ps
 
@@ -72,6 +73,7 @@ module tri_mode_ethernet_mac_0_clk_wiz
   // Clock out ports
   output        CLK_OUT1,
   output        CLK_OUT2,
+  output        CLK_OUT3,
   // Status and control signals
   input         RESET,
   output        LOCKED
@@ -113,10 +115,10 @@ module tri_mode_ethernet_mac_0_clk_wiz
     .CLKOUT1_PHASE        (0.000),
     .CLKOUT1_DUTY_CYCLE   (0.500),
   
-    .CLKOUT2_DIVIDE       (5),
-  
+    .CLKOUT2_DIVIDE       (20),
     .CLKOUT2_PHASE        (0.000),
     .CLKOUT2_DUTY_CYCLE   (0.500),
+
     .CLKIN1_PERIOD        (10.000),
     .REF_JITTER1          (0.010))
   mmcm_adv_inst
@@ -173,5 +175,10 @@ module tri_mode_ethernet_mac_0_clk_wiz
    (.O   (CLK_OUT2),
     .CE  (1'b1),
     .I   (clkout1));
+
+  BUFGCE clkout3_buf
+   (.O   (CLK_OUT3),
+    .CE  (1'b1),
+    .I   (clkout2));
 
 endmodule
