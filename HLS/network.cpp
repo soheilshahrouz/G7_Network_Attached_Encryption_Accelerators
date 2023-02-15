@@ -29,6 +29,25 @@ net::read_mac_addr(hls::stream<net::net_word_t> &input_strm)
 }
 
 
+net::ethernet_header_t
+net::read_ethernet_header(hls::stream<net::net_word_t> &input_strm)
+{
+	net::ethernet_header_t header;
+	net_word_t word;
+
+	header.dst_mac_addr = net::read_mac_addr(input_strm);
+	header.src_mac_addr = net::read_mac_addr(input_strm);
+
+	word = input_strm.read();
+	header.ether_type(15, 8) = word.data;
+
+	word = input_strm.read();
+	header.ether_type( 7, 0) = word.data;
+
+	return header;
+}
+
+
 void
 net::write_mac_addr(hls::stream<net::net_word_t> &output_strm, net::mac_addr_t mac_addr, bool last)
 {
@@ -181,3 +200,158 @@ net::read_pass_ipv4_header(hls::stream<net::net_word_t> &input_strm, hls::stream
 	return ip_header;
 }
 
+
+net::arp_packet_t
+net::read_arp_packet(hls::stream<net::net_word_t> &input_strm)
+{
+#pragma HLS INLINE
+
+	net::arp_packet_t arp_packet;
+	net::net_word_t word;
+
+	word = input_strm.read();
+	arp_packet.htype(15, 8) = word.data;
+	word = input_strm.read();
+	arp_packet.htype( 7, 0) = word.data;
+
+	word = input_strm.read();
+	arp_packet.ptype(15, 8) = word.data;
+	word = input_strm.read();
+	arp_packet.ptype( 7, 0) = word.data;
+
+	word = input_strm.read();
+	arp_packet.hlen( 7, 0) = word.data;
+
+	word = input_strm.read();
+	arp_packet.plen( 7, 0) = word.data;
+
+	word = input_strm.read();
+	arp_packet.oper(15, 8) = word.data;
+	word = input_strm.read();
+	arp_packet.oper( 7, 0) = word.data;
+
+	word = input_strm.read();
+	arp_packet.sha(47, 40) = word.data;
+	word = input_strm.read();
+	arp_packet.sha(39, 32) = word.data;
+	word = input_strm.read();
+	arp_packet.sha(31, 24) = word.data;
+	word = input_strm.read();
+	arp_packet.sha(23, 16) = word.data;
+	word = input_strm.read();
+	arp_packet.sha(15,  8) = word.data;
+	word = input_strm.read();
+	arp_packet.sha( 7,  0) = word.data;
+
+	arp_packet.spa(31, 24) = word.data;
+	word = input_strm.read();
+	arp_packet.spa(23, 16) = word.data;
+	word = input_strm.read();
+	arp_packet.spa(15,  8) = word.data;
+	word = input_strm.read();
+	arp_packet.spa( 7,  0) = word.data;
+
+	word = input_strm.read();
+	arp_packet.tha(47, 40) = word.data;
+	word = input_strm.read();
+	arp_packet.tha(39, 32) = word.data;
+	word = input_strm.read();
+	arp_packet.tha(31, 24) = word.data;
+	word = input_strm.read();
+	arp_packet.tha(23, 16) = word.data;
+	word = input_strm.read();
+	arp_packet.tha(15,  8) = word.data;
+	word = input_strm.read();
+	arp_packet.tha( 7,  0) = word.data;
+
+	arp_packet.tpa(31, 24) = word.data;
+	word = input_strm.read();
+	arp_packet.tpa(23, 16) = word.data;
+	word = input_strm.read();
+	arp_packet.tpa(15,  8) = word.data;
+	word = input_strm.read();
+	arp_packet.tpa( 7,  0) = word.data;
+
+	while(word.last == 0){
+		word = input_strm.read();
+	}
+
+	return arp_packet;
+}
+
+
+void
+net::write_arp_packet(hls::stream<net::net_word_t> &output_strm, net::arp_packet_t arp_packet)
+{
+#pragma HLS INLINE
+
+	net::net_word_t word;
+	word.last = 0;
+
+	word.data = arp_packet.htype(15, 8);
+	output_strm.write(word);
+	word.data = arp_packet.htype( 7, 0);
+	output_strm.write(word);
+
+	word.data = arp_packet.ptype(15, 8);
+	output_strm.write(word);
+	word.data = arp_packet.ptype( 7, 0);
+	output_strm.write(word);
+
+	word.data = arp_packet.hlen( 7, 0);
+	output_strm.write(word);
+
+	word.data = arp_packet.plen( 7, 0);
+	output_strm.write(word);
+
+	word.data = arp_packet.oper(15, 8);
+	output_strm.write(word);
+	word.data = arp_packet.oper( 7, 0);
+	output_strm.write(word);
+
+	word.data = arp_packet.sha(47, 40);
+	output_strm.write(word);
+	word.data = arp_packet.sha(39, 32);
+	output_strm.write(word);
+	word.data = arp_packet.sha(31, 24);
+	output_strm.write(word);
+	word.data = arp_packet.sha(23, 16);
+	output_strm.write(word);
+	word.data = arp_packet.sha(15,  8);
+	output_strm.write(word);
+	word.data = arp_packet.sha( 7,  0);
+	output_strm.write(word);
+
+	word.data = arp_packet.spa(31, 24);
+	output_strm.write(word);
+	word.data = arp_packet.spa(23, 16);
+	output_strm.write(word);
+	word.data = arp_packet.spa(15,  8);
+	output_strm.write(word);
+	word.data = arp_packet.spa( 7,  0);
+	output_strm.write(word);
+
+
+	word.data = arp_packet.tha(47, 40);
+	output_strm.write(word);
+	word.data = arp_packet.tha(39, 32);
+	output_strm.write(word);
+	word.data = arp_packet.tha(31, 24);
+	output_strm.write(word);
+	word.data = arp_packet.tha(23, 16);
+	output_strm.write(word);
+	word.data = arp_packet.tha(15,  8);
+	output_strm.write(word);
+	word.data = arp_packet.tha( 7,  0);
+	output_strm.write(word);
+
+	word.data = arp_packet.tpa(31, 24);
+	output_strm.write(word);
+	word.data = arp_packet.tpa(23, 16);
+	output_strm.write(word);
+	word.data = arp_packet.tpa(15,  8);
+	output_strm.write(word);
+	word.data = arp_packet.tpa( 7,  0);
+	word.last = 1;
+	output_strm.write(word);
+}

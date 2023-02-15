@@ -1,7 +1,7 @@
 /vivado/
 /HLS/parser/parser
 /HLS/distributer/distributer
-
+/HLS/arp/arp
 
 
 *.log
