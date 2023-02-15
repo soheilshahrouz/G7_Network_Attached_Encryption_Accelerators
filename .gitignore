@@ -1,2 +1,7 @@
 /vivado/
-/HLS/parser/solution1
+/HLS/parser/parser
+/HLS/distributer/distributer
+
+
+
+*.log

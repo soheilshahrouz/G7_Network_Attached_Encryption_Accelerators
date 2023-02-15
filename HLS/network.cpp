@@ -70,6 +70,20 @@ net::pass_stream(hls::stream<net_word_t> &input_strm, hls::stream<net_word_t> &o
 }
 
 
+void
+net::discard_stream(hls::stream<net_word_t> &input_strm)
+{
+#pragma HLS INLINE
+
+	net::net_word_t word;
+
+	do{
+#pragma HLS PIPELINE
+		word = input_strm.read();
+	}while(word.last == 0);
+}
+
+
 
 net::ipv4_header_t
 net::read_pass_ipv4_header(hls::stream<net::net_word_t> &input_strm, hls::stream<net::net_word_t> &output_strm)
