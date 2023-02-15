@@ -243,6 +243,7 @@ net::read_arp_packet(hls::stream<net::net_word_t> &input_strm)
 	word = input_strm.read();
 	arp_packet.sha( 7,  0) = word.data;
 
+	word = input_strm.read();
 	arp_packet.spa(31, 24) = word.data;
 	word = input_strm.read();
 	arp_packet.spa(23, 16) = word.data;
@@ -264,6 +265,7 @@ net::read_arp_packet(hls::stream<net::net_word_t> &input_strm)
 	word = input_strm.read();
 	arp_packet.tha( 7,  0) = word.data;
 
+	word = input_strm.read();
 	arp_packet.tpa(31, 24) = word.data;
 	word = input_strm.read();
 	arp_packet.tpa(23, 16) = word.data;
