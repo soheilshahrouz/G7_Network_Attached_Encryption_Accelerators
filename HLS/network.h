@@ -48,6 +48,14 @@ namespace net {
 		ap_uint<32> tpa;
 	} arp_packet_t;
 
+	typedef struct{
+		ap_uint<8>  type;
+		ap_uint<8>  code;
+		ap_uint<16> checksum;
+	} icmp_header_t;
+
+
+
 	typedef ap_uint<8> protocol_t;
 	typedef ap_uint<48> mac_addr_t;
 	typedef ap_uint<16> ether_type_t;
@@ -63,10 +71,12 @@ namespace net {
 	mac_addr_t read_mac_addr(hls::stream<net_word_t> &input_strm);
 	ethernet_header_t read_ethernet_header(hls::stream<net_word_t> &input_strm);
 	arp_packet_t read_arp_packet(hls::stream<net_word_t> &input_strm);
+	ipv4_header_t read_ip_header(hls::stream<net_word_t> &input_strm);
 
 
 	void write_mac_addr(hls::stream<net_word_t> &output_strm, mac_addr_t mac_addr, bool last);
 	void write_arp_packet(hls::stream<net_word_t> &output_strm, arp_packet_t arp_packet);
+	void write_ip_header(hls::stream<net_word_t> &output_strm, ipv4_header_t ip_header);
 
 	void pass_stream(hls::stream<net_word_t> &input_strm, hls::stream<net_word_t> &output_strm);
 	void discard_stream(hls::stream<net_word_t> &input_strm);

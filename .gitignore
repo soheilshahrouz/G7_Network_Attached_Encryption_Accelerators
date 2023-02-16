@@ -2,6 +2,7 @@
 /HLS/parser/parser
 /HLS/distributer/distributer
 /HLS/arp/arp
+/HLS/icmp/icmp
 
 
 *.log

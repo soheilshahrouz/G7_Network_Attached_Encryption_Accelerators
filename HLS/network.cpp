@@ -201,6 +201,154 @@ net::read_pass_ipv4_header(hls::stream<net::net_word_t> &input_strm, hls::stream
 }
 
 
+net::ipv4_header_t
+net::read_ip_header(hls::stream<net::net_word_t> &input_strm)
+{
+	net::ipv4_header_t ip_header;
+	net::net_word_t word;
+
+	// read Version & IHL
+	word = input_strm.read();
+	ip_header.version = word.data(7, 4);
+	ip_header.IHL = word.data(3, 0);
+
+	// read DSCP & ECN
+	word = input_strm.read();
+	ip_header.DSCP = word.data(7, 2);
+	ip_header.ECN = word.data(1, 0);
+
+	// read Total Length
+	word = input_strm.read();
+	ip_header.total_length(15, 8) = word.data;
+	word = input_strm.read();
+	ip_header.total_length( 7, 0) = word.data;
+
+
+	// read Identification
+	word = input_strm.read();
+	ip_header.identification(15, 8) = word.data;
+	word = input_strm.read();
+	ip_header.identification( 7, 0) = word.data;
+
+	// read Identification
+	word = input_strm.read();
+	ip_header.flags = word.data(7, 5);
+	ip_header.frag_offset(12, 8) = word.data(4, 0);
+	word = input_strm.read();
+	ip_header.frag_offset( 7, 0) = word.data;
+
+
+	// read TTL
+	word = input_strm.read();
+	ip_header.ttl = word.data;
+
+	// read Protocol
+	word = input_strm.read();
+	ip_header.protocol = word.data;
+
+	// read Header checksum
+	word = input_strm.read();
+	ip_header.header_checksum(15, 8) = word.data;
+	word = input_strm.read();
+	ip_header.header_checksum( 7, 0) = word.data;
+
+	// read source IP
+	word = input_strm.read();
+	ip_header.src_ip(31, 24) = word.data;
+	word = input_strm.read();
+	ip_header.src_ip(23, 16) = word.data;
+	word = input_strm.read();
+	ip_header.src_ip(15,  8) = word.data;
+	word = input_strm.read();
+	ip_header.src_ip( 7,  0) = word.data;
+
+	// read destination IP
+	word = input_strm.read();
+	ip_header.dst_ip(31, 24) = word.data;
+	word = input_strm.read();
+	ip_header.dst_ip(23, 16) = word.data;
+	word = input_strm.read();
+	ip_header.dst_ip(15,  8) = word.data;
+	word = input_strm.read();
+	ip_header.dst_ip( 7,  0) = word.data;
+
+	return ip_header;
+}
+
+
+void
+net::write_ip_header(hls::stream<net::net_word_t> &output_strm, net::ipv4_header_t ip_header)
+{
+	net::net_word_t word;
+	word.last = 0;
+
+	// Version & IHL
+	word.data(7, 4) = ip_header.version;
+	word.data(3, 0) = ip_header.IHL;
+	output_strm.write(word);
+
+	// DSCP & ECN
+	word.data(7, 2) = ip_header.DSCP;
+	word.data(1, 0) = ip_header.ECN;
+	output_strm.write(word);
+
+	// Total Length
+	word.data = ip_header.total_length(15, 8);
+	output_strm.write(word);
+	word.data = ip_header.total_length( 7, 0);
+	output_strm.write(word);
+
+	// Identification
+	word.data = ip_header.identification(15, 8);
+	output_strm.write(word);
+	word.data = ip_header.identification( 7, 0);
+	output_strm.write(word);
+
+	// read Identification
+	word.data(7, 5) = ip_header.flags;
+	word.data(4, 0) = ip_header.frag_offset(12, 8);
+	output_strm.write(word);
+	word.data = ip_header.frag_offset( 7, 0);
+	output_strm.write(word);
+
+
+	// read TTL
+	word.data = ip_header.ttl;
+	output_strm.write(word);
+
+	// read Protocol
+	word.data = ip_header.protocol;
+	output_strm.write(word);
+
+	// read Header checksum
+	word.data = ip_header.header_checksum(15, 8);
+	output_strm.write(word);
+	word.data = ip_header.header_checksum( 7, 0);
+	output_strm.write(word);
+
+	// read source IP
+	word.data = ip_header.src_ip(31, 24);
+	output_strm.write(word);
+	word.data = ip_header.src_ip(23, 16);
+	output_strm.write(word);
+	word.data = ip_header.src_ip(15,  8);
+	output_strm.write(word);
+	word.data = ip_header.src_ip( 7,  0);
+	output_strm.write(word);
+
+	// read destination IP
+	word.data = ip_header.dst_ip(31, 24);
+	output_strm.write(word);
+	word.data = ip_header.dst_ip(23, 16);
+	output_strm.write(word);
+	word.data = ip_header.dst_ip(15,  8);
+	output_strm.write(word);
+	word.data = ip_header.dst_ip( 7,  0);
+	output_strm.write(word);
+
+}
+
+
 net::arp_packet_t
 net::read_arp_packet(hls::stream<net::net_word_t> &input_strm)
 {
