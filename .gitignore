@@ -3,6 +3,7 @@
 /HLS/distributer/distributer
 /HLS/arp/arp
 /HLS/icmp/icmp
+/HLS/des/des
 
 
 *.log
