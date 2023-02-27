@@ -52,7 +52,16 @@ parser(
 			prot_strm.write((net::protocol_t)((int)net::prot::ICMP));
 		}
 		else if(ip_header.protocol == net::IP_PROTOCOL_UDP){
-			prot_strm.write((net::protocol_t)((int)net::prot::UDP));
+			net::udp_header_t udp_header;
+			udp_header = net::read_pass_udp_header(input_strm, output_strm);
+
+			if(udp_header.dst_port == 60000){
+				prot_strm.write((net::protocol_t)((int)net::prot::UDP));
+			}
+			else{
+				prot_strm.write((net::protocol_t)((int)net::prot::OTHER));
+			}
+
 		}
 		else{
 			prot_strm.write((net::protocol_t)((int)net::prot::OTHER));

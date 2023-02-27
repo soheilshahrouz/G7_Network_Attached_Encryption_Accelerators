@@ -505,3 +505,50 @@ net::write_arp_packet(hls::stream<net::net_word_t> &output_strm, net::arp_packet
 	word.last = 1;
 	output_strm.write(word);
 }
+
+
+net::udp_header_t
+net::read_pass_udp_header(hls::stream<net::net_word_t> &input_strm, hls::stream<net::net_word_t> &output_strm)
+{
+	net::net_word_t word;
+	net::udp_header_t header;
+
+
+	word = input_strm.read();
+	header.src_port(15, 8) = word.data;
+	output_strm.write(word);
+
+	word = input_strm.read();
+	header.src_port( 7, 0) = word.data;
+	output_strm.write(word);
+
+	word = input_strm.read();
+	header.dst_port(15, 8) = word.data;
+	output_strm.write(word);
+
+	word = input_strm.read();
+	header.dst_port( 7, 0) = word.data;
+	output_strm.write(word);
+
+	word = input_strm.read();
+	header.len(15, 8) = word.data;
+	output_strm.write(word);
+
+	word = input_strm.read();
+	header.len( 7, 0) = word.data;
+	output_strm.write(word);
+
+	word = input_strm.read();
+	header.checksum(15, 8) = word.data;
+	output_strm.write(word);
+
+	word = input_strm.read();
+	header.checksum( 7, 0) = word.data;
+	output_strm.write(word);
+
+	return header;
+}
+
+
+
+

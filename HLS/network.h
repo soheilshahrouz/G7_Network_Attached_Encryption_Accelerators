@@ -54,6 +54,13 @@ namespace net {
 		ap_uint<16> checksum;
 	} icmp_header_t;
 
+	typedef struct{
+		ap_uint<16> src_port;
+		ap_uint<16> dst_port;
+		ap_uint<16> len;
+		ap_uint<16> checksum;
+	} udp_header_t;
+
 
 
 	typedef ap_uint<8> protocol_t;
@@ -85,6 +92,6 @@ namespace net {
 
 
 	ipv4_header_t read_pass_ipv4_header(hls::stream<net_word_t> &input_strm, hls::stream<net_word_t> &output_strm);
-
+	udp_header_t read_pass_udp_header(hls::stream<net_word_t> &input_strm, hls::stream<net_word_t> &output_strm);
 
 }  // namespace net
