@@ -4,6 +4,9 @@
 
 #include "des.h"
 
+#include <ap_int.h>
+#include <hls_stream.h>
+
 int initial_key_permutaion[] = {57, 49,  41, 33,  25,  17,  9,
 								 1, 58,  50, 42,  34,  26, 18,
 								10,  2,  59, 51,  43,  35, 27,
@@ -249,8 +252,13 @@ void process_message(unsigned char* message_piece, unsigned char* processed_piec
 	unsigned char shift_byte;
 
 	unsigned char initial_permutation[8];
-	memset(initial_permutation, 0, 8);
-	memset(processed_piece, 0, 8);
+//	memset(initial_permutation, 0, 8);
+//	memset(processed_piece, 0, 8);
+
+	for(i = 0; i < 8; i++){
+		initial_permutation[i] = 0;
+		processed_piece[i] = 0;
+	}
 
 	for (i=0; i<64; i++) {
 		shift_size = initial_message_permutation[i];
@@ -419,5 +427,30 @@ void process_message(unsigned char* message_piece, unsigned char* processed_piec
 		shift_byte <<= ((shift_size - 1)%8);
 
 		processed_piece[i/8] |= (shift_byte >> i%8);
+	}
+}
+
+
+
+
+
+void
+des(
+		hls::stream<unsigned char>& inp_strm,
+		hls::stream<unsigned char>& out_strm,
+		key_set key_sets[17],
+		ap_uint<1> mode)
+{
+	unsigned char message_piece[8];
+	unsigned char processed_piece[8];
+
+	for(ap_uint<4> i = 0; i < 8; i++){
+		message_piece[i] = inp_strm.read();
+	}
+
+	process_message(message_piece, processed_piece, key_sets, mode);
+
+	for(ap_uint<4> i = 0; i < 8; i++){
+		out_strm.write(processed_piece[i]);
 	}
 }
