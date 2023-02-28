@@ -249,6 +249,9 @@ void generate_sub_keys(unsigned char* main_key, key_set* key_sets) {
 void process_message(unsigned char* message_piece, unsigned char* processed_piece, unsigned char key_sets_k[17][8], int mode) {
 #pragma HLS ARRAY_PARTITION variable=message_expansion cyclic factor=8 dim=1
 #pragma HLS ARRAY_PARTITION variable=right_sub_message_permutation cyclic factor=8 dim=1
+#pragma HLS ARRAY_PARTITION variable=initial_message_permutation cyclic factor=8 dim=1
+#pragma HLS ARRAY_PARTITION variable=final_message_permutation complete dim=1
+
 #pragma HLS INLINE
 	int i;
 
@@ -259,19 +262,22 @@ void process_message(unsigned char* message_piece, unsigned char* processed_piec
 
 	memset_0_loop:
 	for(i = 0; i < 8; i++){
+#pragma HLS UNROLL
 		initial_permutation[i] = 0;
 		processed_piece[i] = 0;
 	}
 
 	init_perm_loop:
-	for (i=0; i<64; i++) {
+	for (i=0; i<8; i++) {
 #pragma HLS PIPELINE
-		int shift_size = initial_message_permutation[i];
-		unsigned char shift_byte = 0x80 >> ((shift_size - 1)%8);
-		shift_byte &= message_piece[(shift_size - 1)/8];
-		shift_byte <<= ((shift_size - 1)%8);
-
-		initial_permutation[i/8] |= (shift_byte >> i%8);
+		for(int j = 0; j < 8; j++){
+#pragma HLS UNROLL
+			int shift_size = initial_message_permutation[i*8+j];
+			unsigned char shift_byte = 0x80 >> ((shift_size - 1)%8);
+			shift_byte &= message_piece[(shift_size - 1)/8];
+			shift_byte <<= ((shift_size - 1)%8);
+			initial_permutation[i] |= (shift_byte >> j);
+		}
 	}
 
 	unsigned char l[4];
@@ -452,20 +458,23 @@ void process_message(unsigned char* message_piece, unsigned char* processed_piec
 	}
 
 	unsigned char pre_end_permutation[8];
+#pragma HLS ARRAY_PARTITION variable=pre_end_permutation complete dim=1
 	for (i=0; i<4; i++) {
+#pragma HLS UNROLL
 		pre_end_permutation[i] = r[i];
 		pre_end_permutation[4+i] = l[i];
 	}
 
 	proc_piece_loop:
-	for (i=0; i<64; i++) {
+	for (i=0; i<8; i++) {
 #pragma HLS PIPELINE
-		int shift_size = final_message_permutation[i];
-		unsigned char shift_byte = 0x80 >> ((shift_size - 1)%8);
-		shift_byte &= pre_end_permutation[(shift_size - 1)/8];
-		shift_byte <<= ((shift_size - 1)%8);
-
-		processed_piece[i/8] |= (shift_byte >> i%8);
+		for(int j = 0; j < 8; j++){
+			int shift_size = final_message_permutation[i*8+j];
+			unsigned char shift_byte = 0x80 >> ((shift_size - 1)%8);
+			shift_byte &= pre_end_permutation[(shift_size - 1)/8];
+			shift_byte <<= ((shift_size - 1)%8);
+			processed_piece[i] |= (shift_byte >> j);
+		}
 	}
 }
 
@@ -481,6 +490,8 @@ des(
 		ap_uint<1> mode)
 {
 #pragma HLS ARRAY_PARTITION variable=key_sets_k complete dim=2
+
+
 	unsigned char message_piece[8];
 #pragma HLS ARRAY_PARTITION variable=message_piece complete dim=1
 	unsigned char processed_piece[8];
