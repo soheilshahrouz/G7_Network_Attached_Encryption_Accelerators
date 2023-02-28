@@ -247,10 +247,9 @@ void generate_sub_keys(unsigned char* main_key, key_set* key_sets) {
 }
 
 void process_message(unsigned char* message_piece, unsigned char* processed_piece, unsigned char key_sets_k[17][8], int mode) {
+#pragma HLS ARRAY_PARTITION variable=message_expansion cyclic factor=8 dim=1
 #pragma HLS INLINE
 	int i, k;
-	int shift_size;
-	unsigned char shift_byte;
 
 	unsigned char initial_permutation[8];
 #pragma HLS ARRAY_PARTITION variable=initial_permutation complete dim=1
@@ -266,8 +265,8 @@ void process_message(unsigned char* message_piece, unsigned char* processed_piec
 	init_perm_loop:
 	for (i=0; i<64; i++) {
 #pragma HLS PIPELINE
-		shift_size = initial_message_permutation[i];
-		shift_byte = 0x80 >> ((shift_size - 1)%8);
+		int shift_size = initial_message_permutation[i];
+		unsigned char shift_byte = 0x80 >> ((shift_size - 1)%8);
 		shift_byte &= message_piece[(shift_size - 1)/8];
 		shift_byte <<= ((shift_size - 1)%8);
 
@@ -310,14 +309,16 @@ void process_message(unsigned char* message_piece, unsigned char* processed_piec
 		}
 
 		msg_exp_loop:
-		for (i=0; i<48; i++) {
+		for (i=0; i<6; i++) {
 #pragma HLS PIPELINE
-			shift_size = message_expansion[i];
-			shift_byte = 0x80 >> ((shift_size - 1)%8);
-			shift_byte &= r[(shift_size - 1)/8];
-			shift_byte <<= ((shift_size - 1)%8);
-
-			er[i/8] |= (shift_byte >> i%8);
+			for(int j = 0; j < 8; j++){
+#pragma HLS UNROLL
+				int shift_size = message_expansion[i*8+j];
+				unsigned char shift_byte = 0x80 >> ((shift_size - 1)%8);
+				shift_byte &= r[(shift_size - 1)/8];
+				shift_byte <<= ((shift_size - 1)%8);
+				er[i] |= (shift_byte >> j);
+			}
 		}
 
 		if (mode == DECRYPTION_MODE) {
@@ -429,8 +430,8 @@ void process_message(unsigned char* message_piece, unsigned char* processed_piec
 		rsm_perm_loop:
 		for (i=0; i<32; i++) {
 #pragma HLS PIPELINE
-			shift_size = right_sub_message_permutation[i];
-			shift_byte = 0x80 >> ((shift_size - 1)%8);
+			int shift_size = right_sub_message_permutation[i];
+			unsigned char shift_byte = 0x80 >> ((shift_size - 1)%8);
 			shift_byte &= ser[(shift_size - 1)/8];
 			shift_byte <<= ((shift_size - 1)%8);
 
@@ -455,8 +456,8 @@ void process_message(unsigned char* message_piece, unsigned char* processed_piec
 	proc_piece_loop:
 	for (i=0; i<64; i++) {
 #pragma HLS PIPELINE
-		shift_size = final_message_permutation[i];
-		shift_byte = 0x80 >> ((shift_size - 1)%8);
+		int shift_size = final_message_permutation[i];
+		unsigned char shift_byte = 0x80 >> ((shift_size - 1)%8);
 		shift_byte &= pre_end_permutation[(shift_size - 1)/8];
 		shift_byte <<= ((shift_size - 1)%8);
 
