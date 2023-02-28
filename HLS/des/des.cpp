@@ -246,21 +246,26 @@ void generate_sub_keys(unsigned char* main_key, key_set* key_sets) {
 	}
 }
 
-void process_message(unsigned char* message_piece, unsigned char* processed_piece, key_set* key_sets, int mode) {
+void process_message(unsigned char* message_piece, unsigned char* processed_piece, unsigned char key_sets_k[17][8], int mode) {
+#pragma HLS INLINE
 	int i, k;
 	int shift_size;
 	unsigned char shift_byte;
 
 	unsigned char initial_permutation[8];
+#pragma HLS ARRAY_PARTITION variable=initial_permutation complete dim=1
 //	memset(initial_permutation, 0, 8);
 //	memset(processed_piece, 0, 8);
 
+	memset_0_loop:
 	for(i = 0; i < 8; i++){
 		initial_permutation[i] = 0;
 		processed_piece[i] = 0;
 	}
 
+	init_perm_loop:
 	for (i=0; i<64; i++) {
+#pragma HLS PIPELINE
 		shift_size = initial_message_permutation[i];
 		shift_byte = 0x80 >> ((shift_size - 1)%8);
 		shift_byte &= message_piece[(shift_size - 1)/8];
@@ -269,21 +274,44 @@ void process_message(unsigned char* message_piece, unsigned char* processed_piec
 		initial_permutation[i/8] |= (shift_byte >> i%8);
 	}
 
-	unsigned char l[4], r[4];
+	unsigned char l[4];
+#pragma HLS ARRAY_PARTITION variable=l complete dim=1
+	unsigned char r[4];
+#pragma HLS ARRAY_PARTITION variable=r complete dim=1
+
+	lr_div_loop:
 	for (i=0; i<4; i++) {
+#pragma HLS UNROLL
 		l[i] = initial_permutation[i];
 		r[i] = initial_permutation[i+4];
 	}
 
-	unsigned char ln[4], rn[4], er[6], ser[4];
+	unsigned char ln[4];
+#pragma HLS ARRAY_PARTITION variable=ln complete dim=1
+	unsigned char rn[4];
+#pragma HLS ARRAY_PARTITION variable=rn complete dim=1
+	unsigned char er[6];
+#pragma HLS ARRAY_PARTITION variable=er complete dim=1
+	unsigned char ser[4];
+#pragma HLS ARRAY_PARTITION variable=ser complete dim=1
 
 	int key_index;
 	for (k=1; k<=16; k++) {
-		memcpy(ln, r, 4);
 
-		memset(er, 0, 6);
+//		memcpy(ln, r, 4);
+//		memset(er, 0, 6);
+		for (i=0; i<4; i++) {
+#pragma HLS UNROLL
+			ln[i] = r[i];
+		}
+		for (i=0; i<6; i++) {
+#pragma HLS UNROLL
+			er[i] = 0;
+		}
 
+		msg_exp_loop:
 		for (i=0; i<48; i++) {
+#pragma HLS PIPELINE
 			shift_size = message_expansion[i];
 			shift_byte = 0x80 >> ((shift_size - 1)%8);
 			shift_byte &= r[(shift_size - 1)/8];
@@ -299,12 +327,14 @@ void process_message(unsigned char* message_piece, unsigned char* processed_piec
 		}
 
 		for (i=0; i<6; i++) {
-			er[i] ^= key_sets[key_index].k[i];
+#pragma HLS UNROLL
+			er[i] ^= key_sets_k[key_index][i];
 		}
 
 		unsigned char row, column;
 
 		for (i=0; i<4; i++) {
+#pragma HLS UNROLL
 			ser[i] = 0;
 		}
 
@@ -392,10 +422,13 @@ void process_message(unsigned char* message_piece, unsigned char* processed_piec
 		ser[3] |= (unsigned char)S8[row*16+column];
 
 		for (i=0; i<4; i++) {
+#pragma HLS UNROLL
 			rn[i] = 0;
 		}
 
+		rsm_perm_loop:
 		for (i=0; i<32; i++) {
+#pragma HLS PIPELINE
 			shift_size = right_sub_message_permutation[i];
 			shift_byte = 0x80 >> ((shift_size - 1)%8);
 			shift_byte &= ser[(shift_size - 1)/8];
@@ -405,13 +438,12 @@ void process_message(unsigned char* message_piece, unsigned char* processed_piec
 		}
 
 		for (i=0; i<4; i++) {
+#pragma HLS UNROLL
 			rn[i] ^= l[i];
-		}
-
-		for (i=0; i<4; i++) {
 			l[i] = ln[i];
 			r[i] = rn[i];
 		}
+
 	}
 
 	unsigned char pre_end_permutation[8];
@@ -420,7 +452,9 @@ void process_message(unsigned char* message_piece, unsigned char* processed_piec
 		pre_end_permutation[4+i] = l[i];
 	}
 
+	proc_piece_loop:
 	for (i=0; i<64; i++) {
+#pragma HLS PIPELINE
 		shift_size = final_message_permutation[i];
 		shift_byte = 0x80 >> ((shift_size - 1)%8);
 		shift_byte &= pre_end_permutation[(shift_size - 1)/8];
@@ -438,19 +472,26 @@ void
 des(
 		hls::stream<unsigned char>& inp_strm,
 		hls::stream<unsigned char>& out_strm,
-		key_set key_sets[17],
+		unsigned char key_sets_k[17][8],
 		ap_uint<1> mode)
 {
+#pragma HLS ARRAY_PARTITION variable=key_sets_k complete dim=2
 	unsigned char message_piece[8];
+#pragma HLS ARRAY_PARTITION variable=message_piece complete dim=1
 	unsigned char processed_piece[8];
+#pragma HLS ARRAY_PARTITION variable=processed_piece complete dim=1
 
+	input_buffering:
 	for(ap_uint<4> i = 0; i < 8; i++){
+#pragma HLS PIPELINE
 		message_piece[i] = inp_strm.read();
 	}
 
-	process_message(message_piece, processed_piece, key_sets, mode);
+	process_message(message_piece, processed_piece, key_sets_k, mode);
 
+	output_buffering:
 	for(ap_uint<4> i = 0; i < 8; i++){
+#pragma HLS PIPELINE
 		out_strm.write(processed_piece[i]);
 	}
 }
