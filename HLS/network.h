@@ -79,6 +79,7 @@ namespace net {
 	ethernet_header_t read_ethernet_header(hls::stream<net_word_t> &input_strm);
 	arp_packet_t read_arp_packet(hls::stream<net_word_t> &input_strm);
 	ipv4_header_t read_ip_header(hls::stream<net_word_t> &input_strm);
+	udp_header_t read_udp_header(hls::stream<net_word_t> &input_strm);
 
 
 	void write_mac_addr(hls::stream<net_word_t> &output_strm, mac_addr_t mac_addr, bool last);

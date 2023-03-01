@@ -550,5 +550,36 @@ net::read_pass_udp_header(hls::stream<net::net_word_t> &input_strm, hls::stream<
 }
 
 
+net::udp_header_t
+net::read_udp_header(hls::stream<net::net_word_t> &input_strm)
+{
+	net::net_word_t word;
+	net::udp_header_t header;
 
+	word = input_strm.read();
+	header.src_port(15, 8) = word.data;
+
+	word = input_strm.read();
+	header.src_port( 7, 0) = word.data;
+
+	word = input_strm.read();
+	header.dst_port(15, 8) = word.data;
+
+	word = input_strm.read();
+	header.dst_port( 7, 0) = word.data;
+
+	word = input_strm.read();
+	header.len(15, 8) = word.data;
+
+	word = input_strm.read();
+	header.len( 7, 0) = word.data;
+
+	word = input_strm.read();
+	header.checksum(15, 8) = word.data;
+
+	word = input_strm.read();
+	header.checksum( 7, 0) = word.data;
+
+	return header;
+}
 

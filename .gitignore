@@ -4,6 +4,7 @@
 /HLS/arp/arp
 /HLS/icmp/icmp
 /HLS/des/des
-
+/HLS/udp_depacketizer/udp_depacketizer
+/HLS/udp_packetizer/udp_packetizer
 
 *.log
