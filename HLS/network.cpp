@@ -583,3 +583,47 @@ net::read_udp_header(hls::stream<net::net_word_t> &input_strm)
 	return header;
 }
 
+
+void
+net::write_ethernet_header(hls::stream<net::net_word_t> &output_strm, net::ethernet_header_t header)
+{
+	net::net_word_t word;
+	word.last = 0;
+
+	net::write_mac_addr(output_strm, header.dst_mac_addr, false);
+	net::write_mac_addr(output_strm, header.src_mac_addr, false);
+
+	word.data = header.ether_type(15, 8);
+	output_strm.write(word);
+
+	word.data = header.ether_type( 7, 0);
+	output_strm.write(word);
+}
+
+
+void
+net::write_udp_header(hls::stream<net::net_word_t> &output_strm, net::udp_header_t header)
+{
+	net::net_word_t word;
+	word.last = 0;
+
+	word.data = header.src_port(15, 8);
+	output_strm.write(word);
+	word.data = header.src_port( 7, 0);
+	output_strm.write(word);
+
+	word.data = header.dst_port(15, 8);
+	output_strm.write(word);
+	word.data = header.dst_port( 7, 0);
+	output_strm.write(word);
+
+	word.data = header.len(15, 8);
+	output_strm.write(word);
+	word.data = header.len( 7, 0);
+	output_strm.write(word);
+
+	word.data = header.checksum(15, 8);
+	output_strm.write(word);
+	word.data = header.checksum( 7, 0);
+	output_strm.write(word);
+}

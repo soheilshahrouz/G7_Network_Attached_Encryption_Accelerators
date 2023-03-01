@@ -84,7 +84,9 @@ namespace net {
 
 	void write_mac_addr(hls::stream<net_word_t> &output_strm, mac_addr_t mac_addr, bool last);
 	void write_arp_packet(hls::stream<net_word_t> &output_strm, arp_packet_t arp_packet);
+	void write_ethernet_header(hls::stream<net_word_t> &output_strm, ethernet_header_t header);
 	void write_ip_header(hls::stream<net_word_t> &output_strm, ipv4_header_t ip_header);
+	void write_udp_header(hls::stream<net_word_t> &output_strm, udp_header_t udp_header);
 
 	void pass_stream(hls::stream<net_word_t> &input_strm, hls::stream<net_word_t> &output_strm);
 	void discard_stream(hls::stream<net_word_t> &input_strm);
