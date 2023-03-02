@@ -41,6 +41,26 @@ udp_packetizer(
 
 	word.last = 0;
 
+	udp_header.len = 8;
+	ip_header.total_length = 20 + 8;
+	payload_buffering_loop:
+	for(ap_uint<11> i = 0; i < 1024; i++){
+#pragma HLS PIPELINE
+		word = input_strm.read();
+		if(i%2){
+			checksum += ((ap_uint<16>)word.data) << 8;
+		}
+		else{
+			checksum += ((ap_uint<16>)word.data);
+		}
+		data_buf[i] = word.data;
+		udp_header.len++;
+		ip_header.total_length++;
+		if(word.last){
+			break;
+		}
+	}
+
 	ethernet_header.src_mac_addr(31,  0) = mac_addr_lo(31, 0);
 	ethernet_header.src_mac_addr(47, 32) = mac_addr_hi(15, 0);
 	ethernet_header.ether_type = net::ETHER_TYPE_IPv4;
@@ -49,7 +69,7 @@ udp_packetizer(
 	ip_header.IHL = 5;
 	ip_header.DSCP = 0;
 	ip_header.ECN = 0;
-	ip_header.total_length = 20 + 8;
+//	ip_header.total_length = 20 + 8;
 	ip_header.identification = 0x5894;
 	ip_header.flags = 0;
 	ip_header.frag_offset = 0;
@@ -73,28 +93,11 @@ udp_packetizer(
 	udp_header.checksum = 0;
 	udp_header.dst_port = 60001;
 	udp_header.src_port = 50000;
-	udp_header.len = 8;
+	//udp_header.len = 8;
 
 	checksum += udp_header.dst_port;
 	checksum += udp_header.src_port;
 
-	payload_buffering_loop:
-	for(ap_uint<11> i = 0; i < 1024; i++){
-#pragma HLS PIPELINE
-		word = input_strm.read();
-		if(i%2){
-			checksum += ((ap_uint<16>)word.data) << 8;
-		}
-		else{
-			checksum += ((ap_uint<16>)word.data);
-		}
-		data_buf[i] = word.data;
-		udp_header.len++;
-		ip_header.total_length++;
-		if(word.last){
-			break;
-		}
-	}
 
 	checksum += udp_header.len;
 	checksum += ip_header.total_length;
