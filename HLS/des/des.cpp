@@ -6,6 +6,7 @@
 
 #include <ap_int.h>
 #include <hls_stream.h>
+#include <iostream>
 
 int initial_key_permutaion[] = {57, 49,  41, 33,  25,  17,  9,
 								 1, 58,  50, 42,  34,  26, 18,
@@ -451,11 +452,16 @@ void process_message(unsigned char* message_piece, unsigned char* processed_piec
 		for (i=0; i<4; i++) {
 #pragma HLS UNROLL
 			rn[i] ^= l[i];
+		}
+
+		for (i=0; i<4; i++) {
+#pragma HLS UNROLL
 			l[i] = ln[i];
 			r[i] = rn[i];
 		}
-
 	}
+
+
 
 	unsigned char pre_end_permutation[8];
 #pragma HLS ARRAY_PARTITION variable=pre_end_permutation complete dim=1
@@ -487,8 +493,12 @@ des(
 		hls::stream<unsigned char>& inp_strm,
 		hls::stream<unsigned char>& out_strm,
 		unsigned char key_sets_k[17][8],
-		ap_uint<1> mode)
+		ap_uint<1>& mode)
 {
+#pragma HLS INTERFACE s_axilite port=key_sets_k
+#pragma HLS INTERFACE ap_ctrl_none port=return
+#pragma HLS INTERFACE axis register both port=inp_strm
+#pragma HLS INTERFACE axis register both port=out_strm
 #pragma HLS ARRAY_PARTITION variable=key_sets_k complete dim=2
 
 
