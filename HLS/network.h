@@ -91,7 +91,7 @@ namespace net {
 	void pass_stream(hls::stream<net_word_t> &input_strm, hls::stream<net_word_t> &output_strm);
 	void discard_stream(hls::stream<net_word_t> &input_strm);
 
-	enum class prot { ARP = 0, ICMP, UDP, OTHER };
+	enum class prot { ARP = 0, ICMP, UDP_STRM, UDP_REG, OTHER };
 
 
 	ipv4_header_t read_pass_ipv4_header(hls::stream<net_word_t> &input_strm, hls::stream<net_word_t> &output_strm);

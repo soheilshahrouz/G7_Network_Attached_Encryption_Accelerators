@@ -56,7 +56,10 @@ parser(
 			udp_header = net::read_pass_udp_header(input_strm, output_strm);
 
 			if(udp_header.dst_port == 60000){
-				prot_strm.write((net::protocol_t)((int)net::prot::UDP));
+				prot_strm.write((net::protocol_t)((int)net::prot::UDP_STRM));
+			}
+			else if(udp_header.dst_port == 50000 || udp_header.dst_port == 40000){
+				prot_strm.write((net::protocol_t)((int)net::prot::UDP_REG));
 			}
 			else{
 				prot_strm.write((net::protocol_t)((int)net::prot::OTHER));
