@@ -114,11 +114,12 @@ udp_reg(
 		net::write_ip_header(output_strm, ip_header);
 		net::write_udp_header(output_strm, udp_header);
 
-		word.last = 0;
+		net::net_word_t write_word;
+		write_word.last = 0;
 		for(ap_uint<16> i = 0; i < buf_cnt; i++){
-			word.data = data_buf[i];
-			word.last = (i == buf_cnt-1);
-			output_strm.write(word);
+			write_word.data = data_buf[i];
+			write_word.last = (i == buf_cnt-1);
+			output_strm.write(write_word);
 		}
 
 	}
