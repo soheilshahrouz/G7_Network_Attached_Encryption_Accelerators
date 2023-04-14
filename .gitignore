@@ -8,6 +8,7 @@
 /HLS/udp_packetizer/udp_packetizer
 /HLS/udp_reg/udp_reg
 /HLS/aes/aes/
-/HLS/tlast_gen/tlast_gen
+/HLS/tlas_gen/tlast_gen
+/IP/vivado-library-master
 
 *.log
