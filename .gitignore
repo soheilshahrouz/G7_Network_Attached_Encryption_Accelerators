@@ -10,5 +10,6 @@
 /HLS/aes/aes/
 /HLS/tlas_gen/tlast_gen
 /IP/vivado-library-master
+/ECE532_project
 
 *.log
