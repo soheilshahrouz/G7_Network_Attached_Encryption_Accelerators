@@ -67,7 +67,7 @@ udp_reg(
 	}
 	else if(udp_header.dst_port == 40000){
 
-		for(ap_uint<16> i = 8; i < udp_header.len; i+=8){
+		for(ap_uint<16> i = 8; i < udp_header.len; i+=4){
 
 			word = input_strm.read();
 			reg_addr(31, 24) = word.data;

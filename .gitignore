@@ -6,5 +6,8 @@
 /HLS/des/des
 /HLS/udp_depacketizer/udp_depacketizer
 /HLS/udp_packetizer/udp_packetizer
+/HLS/udp_reg/udp_reg
+/HLS/aes/aes/
+/HLS/tlast_gen/tlast_gen
 
 *.log
