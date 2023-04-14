@@ -14,7 +14,20 @@ module top (
     input  [1 : 0]  phy2rmii_rxd,
     output [1 : 0]  rmii2phy_txd,
     output          rmii2phy_tx_en,
-    output          eth_ref_clk
+    output          eth_ref_clk,
+
+    input  [15: 0]  dip_switches_16bits_tri_i,
+    output [15: 0]  led_tri_o,
+
+    
+    inout Pmod_out_0_pin1_io,
+    inout Pmod_out_0_pin2_io,
+    inout Pmod_out_0_pin3_io,
+    inout Pmod_out_0_pin4_io,
+    inout Pmod_out_0_pin7_io,
+    inout Pmod_out_0_pin8_io,
+    inout Pmod_out_0_pin9_io,
+    inout Pmod_out_0_pin10_io
 
 );
 
@@ -73,6 +86,8 @@ module top (
         .axi_clk(axi_clk),
         .axi_resetn(axi_resetn),
 
+        .dip_switches_16bits_tri_i(dip_switches_16bits_tri_i),
+
         .m_axi_temac_araddr(axi_temac_araddr),
         .m_axi_temac_arprot(axi_temac_arprot),
         .m_axi_temac_arready(axi_temac_arready),
@@ -104,7 +119,18 @@ module top (
         .net_axis_tx_tdata(net_axis_tx_tdata),
         .net_axis_tx_tlast(net_axis_tx_tlast),
         .net_axis_tx_tready(net_axis_tx_tready),
-        .net_axis_tx_tvalid(net_axis_tx_tvalid)
+        .net_axis_tx_tvalid(net_axis_tx_tvalid),
+
+        .Pmod_out_0_pin1_io(Pmod_out_0_pin1_io),
+        .Pmod_out_0_pin2_io(Pmod_out_0_pin2_io),
+        .Pmod_out_0_pin3_io(Pmod_out_0_pin3_io),
+        .Pmod_out_0_pin4_io(Pmod_out_0_pin4_io),
+        .Pmod_out_0_pin7_io(Pmod_out_0_pin7_io),
+        .Pmod_out_0_pin8_io(Pmod_out_0_pin8_io),
+        .Pmod_out_0_pin9_io(Pmod_out_0_pin9_io),
+        .Pmod_out_0_pin10_io(Pmod_out_0_pin10_io),
+
+        .led_tri_o(led_tri_o)
     );
 
 
