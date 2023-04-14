@@ -1,4 +1,4 @@
-/vivado/
+
 /HLS/parser/parser
 /HLS/distributer/distributer
 /HLS/arp/arp
@@ -9,7 +9,14 @@
 /HLS/udp_reg/udp_reg
 /HLS/aes/aes/
 /HLS/tlas_gen/tlast_gen
-/IP/vivado-library-master
+
 /ECE532_project
+
+/IP/vivado-library-master
+/IP/mii_to_rmii_0/*
+!/IP/mii_to_rmii_0/mii_to_rmii_0.xci
+/IP/tri_mode_ethernet_mac_0/*
+!/IP/tri_mode_ethernet_mac_0/tri_mode_ethernet_mac_0.xci
+
 
 *.log
