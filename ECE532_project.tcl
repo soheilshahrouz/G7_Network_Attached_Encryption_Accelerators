@@ -44,7 +44,6 @@
 #    "/home/soheil/ECE532/src/tri_mode_ethernet_mac_0_ten_100_1g_eth_fifo.v"
 #    "/home/soheil/ECE532/src/tri_mode_ethernet_mac_0_tx_client_fifo.v"
 #    "/home/soheil/ECE532/src/top.v"
-#    "/home/soheil/ECE532/src/tri_mode_ethernet_mac_0_axi_lite_sm.v"
 #    "/home/soheil/ECE532/src/tri_mode_ethernet_mac_0_example_design.xdc"
 #    "/home/soheil/ECE532/src/tri_mode_ethernet_mac_0_user_phytiming.xdc"
 #    "/home/soheil/ECE532/src/pin_locations.xdc"
@@ -187,7 +186,6 @@ set files [list \
  [file normalize "${origin_dir}/src/tri_mode_ethernet_mac_0_ten_100_1g_eth_fifo.v"] \
  [file normalize "${origin_dir}/src/tri_mode_ethernet_mac_0_tx_client_fifo.v"] \
  [file normalize "${origin_dir}/src/top.v"] \
- [file normalize "${origin_dir}/src/tri_mode_ethernet_mac_0_axi_lite_sm.v"] \
 ]
 add_files -norecurse -fileset $obj $files
 
