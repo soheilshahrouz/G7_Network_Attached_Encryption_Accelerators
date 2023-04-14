@@ -505,6 +505,7 @@ des(
 		ap_uint<1>& mode)
 {
 #pragma HLS INTERFACE s_axilite port=key_sets_k
+#pragma HLS INTERFACE s_axilite port=mode
 #pragma HLS INTERFACE ap_ctrl_none port=return
 #pragma HLS INTERFACE axis register both port=inp_strm
 #pragma HLS INTERFACE axis register both port=out_strm
