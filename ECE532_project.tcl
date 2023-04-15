@@ -166,7 +166,7 @@ if {[string equal [get_filesets -quiet sources_1] ""]} {
 
 # Set IP repository paths
 set obj [get_filesets sources_1]
-set_property "ip_repo_paths" "[file normalize "$origin_dir/HLS"] [file normalize "$origin_dir/IP"]" $obj
+set_property "ip_repo_paths" "[file normalize "$origin_dir/HLS"] [file normalize "$origin_dir/IP"] [file normalize "$origin_dir/vivado-library"]" $obj
 
 # Rebuild user ip_repo's index before adding any source files
 update_ip_catalog -rebuild
